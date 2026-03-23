@@ -862,10 +862,19 @@ taskInput.addEventListener('keydown', function(e) {
 // ── ADD — using addEventListener not onclick ────────
 document.getElementById('add-btn').addEventListener('click', addTask);
 document.getElementById('clear-btn').addEventListener('click', clearDone);
-document.getElementById('alarm-done-btn').addEventListener('click', alarmDone);
+const alarmDoneBtn = document.getElementById('alarm-done-btn');
+alarmDoneBtn.addEventListener('click', alarmDone);
+alarmDoneBtn.addEventListener('touchend', function(e) {
+  e.preventDefault();
+  alarmDone();
+});
 
 document.querySelectorAll('.alarm-snooze-opt').forEach(btn => {
   btn.addEventListener('click', function() {
+    alarmSnooze(parseInt(this.dataset.mins));
+  });
+  btn.addEventListener('touchend', function(e) {
+    e.preventDefault();
     alarmSnooze(parseInt(this.dataset.mins));
   });
 });
