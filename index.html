@@ -451,6 +451,119 @@ header {
   .brand-name { font-size: 38px; }
   .datetime-input { min-width: 0; }
 }
+/* ALARM OVERLAY */
+.alarm-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 200;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px;
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s;
+}
+.alarm-overlay.open { opacity: 1; pointer-events: all; }
+
+.alarm-pulse {
+  position: absolute; inset: 0;
+  background: var(--accent);
+  opacity: 0;
+  animation: none;
+}
+.alarm-overlay.open .alarm-pulse {
+  animation: pulse-bg 1s ease-in-out infinite;
+}
+@keyframes pulse-bg {
+  0%,100% { opacity: 0; }
+  50%      { opacity: 0.07; }
+}
+
+.alarm-icon {
+  font-size: 52px;
+  margin-bottom: 24px;
+  animation: none;
+}
+.alarm-overlay.open .alarm-icon {
+  animation: shake 0.5s ease-in-out infinite;
+}
+@keyframes shake {
+  0%,100% { transform: rotate(0deg); }
+  20%     { transform: rotate(-15deg); }
+  40%     { transform: rotate(15deg); }
+  60%     { transform: rotate(-10deg); }
+  80%     { transform: rotate(10deg); }
+}
+
+.alarm-label {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+.alarm-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(24px, 6vw, 40px);
+  font-weight: 900;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.2;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.alarm-time {
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 48px;
+  letter-spacing: 0.5px;
+}
+
+.alarm-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.alarm-done {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  font-family: 'Fragment Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .15s;
+}
+.alarm-done:hover { filter: brightness(1.1); }
+.alarm-done:active { transform: scale(0.97); }
+
+.alarm-snooze-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.alarm-snooze-opt {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'Fragment Mono', monospace;
+  font-size: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all .15s;
+  text-align: center;
+}
+.alarm-snooze-opt:hover { border-color: var(--orange); color: var(--orange); }
 </style>
 </head>
 <body>
@@ -517,20 +630,23 @@ header {
   <div class="task-list" id="done-list"></div>
 </div>
 
-<div class="modal-overlay" id="modal" onclick="closeModal(event)">
-  <div class="modal">
-    <div class="modal-title">Snooze</div>
-    <div class="modal-task" id="modal-task-title"></div>
-    <div class="snooze-grid">
-      <button class="snooze-opt" onclick="snooze(5)">5 min</button>
-      <button class="snooze-opt" onclick="snooze(15)">15 min</button>
-      <button class="snooze-opt" onclick="snooze(30)">30 min</button>
-      <button class="snooze-opt" onclick="snooze(60)">1 hour</button>
+<!-- ALARM OVERLAY -->
+<div class="alarm-overlay" id="alarm-overlay">
+  <div class="alarm-pulse"></div>
+  <div class="alarm-icon">🔔</div>
+  <div class="alarm-label">reminder</div>
+  <div class="alarm-title" id="alarm-title"></div>
+  <div class="alarm-time" id="alarm-time"></div>
+  <div class="alarm-btns">
+    <button class="alarm-done" onclick="alarmDone()">✓ mark as done</button>
+    <div class="alarm-snooze-grid">
+      <button class="alarm-snooze-opt" onclick="alarmSnooze(5)">snooze 5m</button>
+      <button class="alarm-snooze-opt" onclick="alarmSnooze(15)">snooze 15m</button>
+      <button class="alarm-snooze-opt" onclick="alarmSnooze(30)">snooze 30m</button>
+      <button class="alarm-snooze-opt" onclick="alarmSnooze(60)">snooze 1hr</button>
     </div>
-    <button class="modal-close" onclick="closeModal()">cancel</button>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -722,6 +838,30 @@ function fireReminder(id) {
     scheduleOne(nextTask);
   }
 
+  showAlarm(task);
+}
+
+  if (Notification.permission === 'granted') {
+    try { new Notification('DoIt. ⏰', { body: task.title, tag: task.id, vibrate: [200,100,200] }); }
+    catch { new Notification('DoIt.', { body: task.title }); }
+  }
+
+  if (task.recur) {
+    const next = new Date(task.time);
+    if (task.recur === 'daily')  next.setDate(next.getDate() + 1);
+    if (task.recur === 'weekly') next.setDate(next.getDate() + 7);
+    const nextTask = {
+      ...task,
+      id: Date.now().toString(36) + 'r',
+      time: next.toISOString(),
+      done: false, fired: false,
+      created: Date.now()
+    };
+    tasks.unshift(nextTask);
+    save(); render();
+    scheduleOne(nextTask);
+  }
+
   toast('⏰ ' + task.title.slice(0, 48), 'warn');
 }
 
@@ -848,6 +988,87 @@ function toast(msg, type = '') {
   el.className = `toast show${type ? ' '+type : ''}`;
   clearTimeout(toastT);
   toastT = setTimeout(() => { el.className = 'toast'; }, 2800);
+}
+
+// ALARM
+let alarmTaskId = null;
+let alarmSound = null;
+
+function showAlarm(task) {
+  alarmTaskId = task.id;
+  document.getElementById('alarm-title').textContent = task.title;
+  document.getElementById('alarm-time').textContent = new Date(task.time)
+    .toLocaleString('en-NG', {
+      weekday: 'long', day: 'numeric', month: 'short',
+      hour: '2-digit', minute: '2-digit'
+    });
+  document.getElementById('alarm-overlay').classList.add('open');
+  startAlarmSound();
+
+  // vibrate pattern on mobile
+  if (navigator.vibrate) {
+    navigator.vibrate([500, 200, 500, 200, 500]);
+  }
+}
+
+function closeAlarm() {
+  document.getElementById('alarm-overlay').classList.remove('open');
+  stopAlarmSound();
+  alarmTaskId = null;
+}
+
+function alarmDone() {
+  if (!alarmTaskId) return;
+  const t = tasks.find(t => t.id === alarmTaskId);
+  if (t) { t.done = true; save(); render(); }
+  closeAlarm();
+  toast('Done! ✓', 'good');
+}
+
+function alarmSnooze(mins) {
+  if (!alarmTaskId) return;
+  const t = tasks.find(t => t.id === alarmTaskId);
+  if (t) {
+    t.time = new Date(Date.now() + mins * 60000).toISOString();
+    t.fired = false;
+    if (timers[t.id]) clearTimeout(timers[t.id]);
+    scheduleOne(t);
+    save(); render();
+    toast(`Snoozed ${mins} min`, 'warn');
+  }
+  closeAlarm();
+}
+
+function startAlarmSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    let step = 0;
+    const pattern = [660, 0, 660, 0, 660, 0, 880];
+
+    function beep() {
+      if (!alarmTaskId) return;
+      const freq = pattern[step % pattern.length];
+      if (freq > 0) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.4, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.3);
+      }
+      step++;
+      alarmSound = setTimeout(beep, 500);
+    }
+    beep();
+  } catch(e) {}
+}
+
+function stopAlarmSound() {
+  if (alarmSound) { clearTimeout(alarmSound); alarmSound = null; }
 }
 
 // INIT
