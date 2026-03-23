@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>DoIt.</title>
+<link href="https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0a;
+  --surface: #161616;
+  --surface2: #1e1e1e;
+  --border: #252525;
+  --border2: #303030;
+  --text: #f0ede6;
+  --text2: #777;
+  --muted: #444;
+  --accent: #c8f135;
+  --red: #ff4422;
+  --orange: #ff9500;
+  --blue: #4da6ff;
+  --green: #00c97a;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+[data-theme="light"] {
+  --bg: #f5f4ef;
+  --surface: #ffffff;
+  --surface2: #f0efe9;
+  --border: #e5e3db;
+  --border2: #d8d6ce;
+  --text: #111111;
+  --text2: #777777;
+  --muted: #bbbbbb;
+}
+
+html { -webkit-font-smoothing: antialiased; }
+
+body {
+  font-family: 'Fragment Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  max-width: 640px;
+  margin: 0 auto;
+  padding-bottom: 80px;
+  transition: background .3s, color .3s;
+}
+
+/* HEADER */
+header {
+  padding: 32px 24px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.brand-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 44px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.brand-name em { font-style: normal; color: var(--accent); }
+
+.brand-sub {
+  font-size: 10px;
+  color: var(--text2);
+  letter-spacing: 1px;
+  margin-top: 6px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text2);
+  font-size: 15px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+}
+.icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+.icon-btn.on { border-color: var(--green); color: var(--green); }
+
+.rule { height: 1px; background: var(--border); margin: 24px 24px 0; }
+
+/* FORM */
+.add-section { padding: 24px 24px 0; }
+
+.form-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color .2s;
+}
+.form-card:focus-within { border-color: rgba(200,241,53,0.35); }
+
+.task-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'Fragment Mono', monospace;
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.6;
+  resize: none;
+  padding: 18px 18px 0;
+  min-height: 56px;
+  max-height: 140px;
+}
+.task-input::placeholder { color: var(--muted); }
+
+.form-options {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  flex-wrap: wrap;
+}
+
+.opt-select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text2);
+  font-family: 'Fragment Mono', monospace;
+  font-size: 11px;
+  padding: 6px 10px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color .2s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.opt-select:focus { border-color: var(--accent); color: var(--text); }
+
+.datetime-input {
+  flex: 1;
+  min-width: 180px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text2);
+  font-family: 'Fragment Mono', monospace;
+  font-size: 11px;
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color .2s;
+  color-scheme: dark;
+}
+[data-theme="light"] .datetime-input { color-scheme: light; }
+.datetime-input:focus { border-color: var(--accent); color: var(--text); }
+
+.form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 14px;
+  border-top: 1px solid var(--border);
+  gap: 10px;
+}
+
+.time-preview { font-size: 11px; color: var(--accent); flex: 1; }
+.time-preview.dim { color: var(--muted); }
+
+.add-btn {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 9px 20px;
+  font-family: 'Fragment Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .15s;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.add-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.add-btn:active { transform: scale(0.97); }
+
+/* TASKS SECTION */
+.tasks-section { padding: 28px 24px 0; }
+.done-section  { padding: 20px 24px 0; }
+
+.section-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.section-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text2);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.count-pill {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 100px;
+}
+
+.text-btn {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: none; border: none;
+  cursor: pointer;
+  font-family: 'Fragment Mono', monospace;
+  transition: color .15s;
+}
+.text-btn:hover { color: var(--red); }
+
+.task-list { display: flex; flex-direction: column; }
+
+/* TASK ROW — no card, just a clean row with divider */
+.task-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  animation: fadeIn .2s ease;
+  transition: opacity .2s;
+  position: relative;
+  padding-left: 14px;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.task-row:first-child { border-top: 1px solid var(--border); }
+.task-row.done { opacity: 0.3; }
+.task-row.done .task-title { text-decoration: line-through; }
+
+/* PRIORITY STRIPE — thin left edge only */
+.task-row::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 12px; bottom: 12px;
+  width: 3px;
+  border-radius: 2px;
+  background: transparent;
+}
+.task-row.pri-high::before { background: var(--red); }
+.task-row.pri-med::before  { background: var(--orange); }
+.task-row.pri-low::before  { background: var(--blue); }
+
+/* CHECKBOX */
+.chk {
+  width: 20px; height: 20px;
+  border: 1.5px solid var(--border2);
+  border-radius: 5px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.chk:hover { border-color: var(--accent); }
+.task-row.done .chk { background: var(--accent); border-color: var(--accent); }
+.task-row.done .chk::after {
+  content: '';
+  width: 4px; height: 8px;
+  border: 2px solid #000;
+  border-top: none; border-left: none;
+  transform: rotate(45deg) translate(-1px, -1px);
+  display: block;
+}
+
+.task-body { flex: 1; min-width: 0; }
+
+.task-title {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+  word-break: break-word;
+  margin-bottom: 6px;
+}
+
+.task-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.task-time {
+  font-size: 11px;
+  color: var(--text2);
+  display: flex; align-items: center; gap: 4px;
+}
+.task-time.soon    { color: var(--orange); }
+.task-time.overdue { color: var(--red); }
+.task-time.fired   { color: var(--green); }
+
+/* BADGES — outline only, white text, no background */
+.badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-family: 'Fragment Mono', monospace;
+  white-space: nowrap;
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border2);
+}
+.badge-rec { color: var(--accent); border-color: rgba(200,241,53,0.35); }
+
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.act-btn {
+  background: none; border: none;
+  color: var(--border2);
+  cursor: pointer;
+  font-size: 14px;
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+  font-family: monospace;
+}
+.act-btn:hover { background: var(--surface2); color: var(--text2); }
+.act-btn.del:hover { color: var(--red); }
+.act-btn.snz:hover { color: var(--orange); }
+
+/* EMPTY */
+.empty-state {
+  padding: 48px 0;
+  text-align: center;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 10px;
+}
+.empty-glyph { font-size: 28px; color: var(--border2); }
+.empty-text  { font-size: 13px; color: var(--muted); }
+.empty-hint  { font-size: 11px; color: var(--border2); }
+
+/* SNOOZE MODAL */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; padding: 20px;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 24px;
+  width: 100%; max-width: 300px;
+  transform: translateY(10px);
+  transition: transform .2s;
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+
+.modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; font-weight: 700;
+  margin-bottom: 4px;
+}
+.modal-task { font-size: 11px; color: var(--text2); margin-bottom: 20px; }
+
+.snooze-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px; margin-bottom: 12px;
+}
+
+.snooze-opt {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'Fragment Mono', monospace;
+  font-size: 12px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all .15s;
+  text-align: center;
+}
+.snooze-opt:hover { border-color: var(--orange); color: var(--orange); }
+
+.modal-close {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-family: 'Fragment Mono', monospace;
+  font-size: 12px; padding: 10px;
+  cursor: pointer; transition: all .15s;
+}
+.modal-close:hover { border-color: var(--red); color: var(--red); }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-size: 12px; letter-spacing: 0.5px;
+  padding: 11px 22px; border-radius: 100px;
+  transition: transform .3s cubic-bezier(.34,1.4,.64,1);
+  pointer-events: none; white-space: nowrap; z-index: 999;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.good { border-color: rgba(200,241,53,0.4); color: var(--accent); }
+.toast.warn { border-color: rgba(255,149,0,0.4); color: var(--orange); }
+
+@media (max-width: 480px) {
+  header { padding: 24px 18px 0; }
+  .rule, .add-section, .tasks-section, .done-section { padding-left: 18px; padding-right: 18px; }
+  .brand-name { font-size: 38px; }
+  .datetime-input { min-width: 0; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="brand-name">Do<em>It.</em></div>
+    <div class="brand-sub" id="today-label"></div>
+  </div>
+  <div class="header-right">
+    <button class="icon-btn" id="bell-btn" onclick="handleNotif()" title="Enable reminders">🔔</button>
+    <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
+  </div>
+</header>
+
+<div class="rule"></div>
+
+<div class="add-section">
+  <div class="form-card">
+    <textarea class="task-input" id="task-input" placeholder="what needs doing?" rows="2"></textarea>
+    <div class="form-options">
+      <input type="datetime-local" class="datetime-input" id="dt-input" />
+      <select class="opt-select" id="priority-select">
+        <option value="">priority</option>
+        <option value="high">↑ high</option>
+        <option value="med">→ medium</option>
+        <option value="low">↓ low</option>
+      </select>
+      <select class="opt-select" id="category-select">
+        <option value="">category</option>
+        <option value="school">school</option>
+        <option value="work">work</option>
+        <option value="personal">personal</option>
+        <option value="health">health</option>
+        <option value="finance">finance</option>
+      </select>
+      <select class="opt-select" id="recur-select">
+        <option value="">repeat</option>
+        <option value="daily">daily</option>
+        <option value="weekly">weekly</option>
+      </select>
+    </div>
+    <div class="form-footer">
+      <div class="time-preview dim" id="time-preview">pick a date & time</div>
+      <button class="add-btn" onclick="addTask()">+ add</button>
+    </div>
+  </div>
+</div>
+
+<div class="tasks-section">
+  <div class="section-row">
+    <div class="section-label">
+      tasks <span class="count-pill" id="pending-count">0</span>
+    </div>
+  </div>
+  <div class="task-list" id="pending-list"></div>
+</div>
+
+<div class="done-section" id="done-section" style="display:none">
+  <div class="section-row">
+    <div class="section-label">done</div>
+    <button class="text-btn" onclick="clearDone()">clear all</button>
+  </div>
+  <div class="task-list" id="done-list"></div>
+</div>
+
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title">Snooze</div>
+    <div class="modal-task" id="modal-task-title"></div>
+    <div class="snooze-grid">
+      <button class="snooze-opt" onclick="snooze(5)">5 min</button>
+      <button class="snooze-opt" onclick="snooze(15)">15 min</button>
+      <button class="snooze-opt" onclick="snooze(30)">30 min</button>
+      <button class="snooze-opt" onclick="snooze(60)">1 hour</button>
+    </div>
+    <button class="modal-close" onclick="closeModal()">cancel</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// THEME
+let theme = localStorage.getItem('doit_theme') || 'system';
+
+function applyTheme() {
+  const btn = document.getElementById('theme-btn');
+  if (theme === 'system') {
+    const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    btn.textContent = '⚙️';
+  } else {
+    document.documentElement.setAttribute('data-theme', theme);
+    btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  }
+}
+
+function toggleTheme() {
+  theme = theme === 'system' ? 'dark' : theme === 'dark' ? 'light' : 'system';
+  localStorage.setItem('doit_theme', theme);
+  applyTheme();
+}
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (theme === 'system') applyTheme();
+});
+
+// STATE
+let tasks = [];
+let timers = {};
+let snoozeTarget = null;
+
+function load() {
+  try { tasks = JSON.parse(localStorage.getItem('doit_v5') || '[]'); }
+  catch { tasks = []; }
+}
+function save() { localStorage.setItem('doit_v5', JSON.stringify(tasks)); }
+
+// CLOCK
+function updateClock() {
+  const now = new Date();
+  const date = now.toLocaleDateString('en-NG', {
+    weekday: 'long', day: 'numeric', month: 'short'
+  }).toUpperCase();
+  const time = now.toLocaleTimeString('en-NG', {
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
+  });
+  document.getElementById('today-label').textContent = `${date} · ${time}`;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// DATETIME PREVIEW
+const dtInput = document.getElementById('dt-input');
+const preview = document.getElementById('time-preview');
+
+function setMinDate() {
+  const now = new Date();
+  now.setSeconds(0, 0);
+  dtInput.min = now.toISOString().slice(0, 16);
+}
+setMinDate();
+setInterval(setMinDate, 60000);
+
+dtInput.addEventListener('change', function () {
+  if (!this.value) {
+    preview.textContent = 'pick a date & time';
+    preview.className = 'time-preview dim';
+    return;
+  }
+  const d = new Date(this.value);
+  preview.textContent = '→ ' + d.toLocaleString('en-NG', {
+    weekday: 'short', day: 'numeric', month: 'short',
+    hour: '2-digit', minute: '2-digit'
+  });
+  preview.className = 'time-preview';
+});
+
+// NOTIFICATIONS
+function updateBell() {
+  const btn = document.getElementById('bell-btn');
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') btn.classList.add('on');
+  else btn.classList.remove('on');
+}
+
+function handleNotif() {
+  if (!('Notification' in window)) { toast('Not supported'); return; }
+  if (Notification.permission === 'granted') { toast('Reminders are on ✓', 'good'); return; }
+  Notification.requestPermission().then(p => {
+    updateBell();
+    if (p === 'granted') { toast('Reminders enabled!', 'good'); scheduleAll(); }
+    else toast('Blocked — enable in browser settings');
+  });
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+// INPUT
+const taskInput = document.getElementById('task-input');
+
+taskInput.addEventListener('input', function () {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 140) + 'px';
+});
+
+taskInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addTask(); }
+});
+
+// ADD
+function addTask() {
+  const title    = taskInput.value.trim();
+  const dtVal    = dtInput.value;
+  const priority = document.getElementById('priority-select').value;
+  const category = document.getElementById('category-select').value;
+  const recur    = document.getElementById('recur-select').value;
+
+  if (!title)    { toast('Type what needs doing'); taskInput.focus(); return; }
+  if (!dtVal)    { toast('Pick a date & time ⏰'); return; }
+  if (!priority) { toast('Pick a priority level'); return; }
+  if (!category) { toast('Pick a category'); return; }
+
+  const task = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+    title, priority, category,
+    recur: recur || null,
+    time: new Date(dtVal).toISOString(),
+    done: false, fired: false,
+    created: Date.now()
+  };
+
+  tasks.unshift(task);
+  save(); render();
+  scheduleOne(task);
+
+  taskInput.value = '';
+  taskInput.style.height = 'auto';
+  dtInput.value = '';
+  document.getElementById('priority-select').value = '';
+  document.getElementById('category-select').value = '';
+  document.getElementById('recur-select').value = '';
+  preview.textContent = 'pick a date & time';
+  preview.className = 'time-preview dim';
+  taskInput.focus();
+  toast('Task added ✓', 'good');
+}
+
+// SCHEDULE
+function scheduleAll() {
+  Object.values(timers).forEach(clearTimeout);
+  timers = {};
+  tasks.filter(t => !t.done && t.time && !t.fired).forEach(scheduleOne);
+}
+
+function scheduleOne(task) {
+  const delay = new Date(task.time) - Date.now();
+  if (delay <= 0) return;
+  timers[task.id] = setTimeout(() => fireReminder(task.id), delay);
+}
+
+function fireReminder(id) {
+  const task = tasks.find(t => t.id === id);
+  if (!task || task.done) return;
+  task.fired = true;
+  save(); render();
+
+  if (Notification.permission === 'granted') {
+    try { new Notification('DoIt. ⏰', { body: task.title, tag: task.id, vibrate: [200,100,200] }); }
+    catch { new Notification('DoIt.', { body: task.title }); }
+  }
+
+  if (task.recur) {
+    const next = new Date(task.time);
+    if (task.recur === 'daily')  next.setDate(next.getDate() + 1);
+    if (task.recur === 'weekly') next.setDate(next.getDate() + 7);
+    const nextTask = {
+      ...task,
+      id: Date.now().toString(36) + 'r',
+      time: next.toISOString(),
+      done: false, fired: false,
+      created: Date.now()
+    };
+    tasks.unshift(nextTask);
+    save(); render();
+    scheduleOne(nextTask);
+  }
+
+  toast('⏰ ' + task.title.slice(0, 48), 'warn');
+}
+
+// ACTIONS
+function toggleDone(id) {
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  t.done = !t.done;
+  if (t.done && timers[id]) { clearTimeout(timers[id]); delete timers[id]; }
+  if (!t.done && t.time && !t.fired) scheduleOne(t);
+  save(); render();
+}
+
+function deleteTask(id) {
+  if (timers[id]) { clearTimeout(timers[id]); delete timers[id]; }
+  tasks = tasks.filter(t => t.id !== id);
+  save(); render();
+}
+
+function clearDone() {
+  tasks = tasks.filter(t => !t.done);
+  save(); render();
+  toast('Cleared');
+}
+
+// SNOOZE
+function openSnooze(id) {
+  snoozeTarget = id;
+  const task = tasks.find(t => t.id === id);
+  if (!task) return;
+  document.getElementById('modal-task-title').textContent = task.title;
+  document.getElementById('modal').classList.add('open');
+}
+
+function snooze(mins) {
+  if (!snoozeTarget) return;
+  const task = tasks.find(t => t.id === snoozeTarget);
+  if (task) {
+    task.time = new Date(Date.now() + mins * 60000).toISOString();
+    task.fired = false;
+    if (timers[task.id]) clearTimeout(timers[task.id]);
+    scheduleOne(task);
+    save(); render();
+    toast(`Snoozed ${mins} min`, 'warn');
+  }
+  closeModal();
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modal')) return;
+  document.getElementById('modal').classList.remove('open');
+  snoozeTarget = null;
+}
+
+// RENDER
+function render() {
+  const pending = tasks.filter(t => !t.done);
+  const done    = tasks.filter(t => t.done);
+
+  document.getElementById('pending-count').textContent = pending.length;
+
+  document.getElementById('pending-list').innerHTML = pending.length
+    ? pending.map(rowHTML).join('')
+    : `<div class="empty-state">
+        <div class="empty-glyph">◻</div>
+        <div class="empty-text">nothing here yet</div>
+        <div class="empty-hint">fill the form above and hit enter</div>
+       </div>`;
+
+  document.getElementById('done-list').innerHTML = done.map(rowHTML).join('');
+  document.getElementById('done-section').style.display = done.length ? 'block' : 'none';
+}
+
+function rowHTML(t) {
+  const { label, cls } = timeLabel(t);
+  const catBadge = t.category ? `<span class="badge">${t.category}</span>` : '';
+  const recBadge = t.recur    ? `<span class="badge badge-rec">↺ ${t.recur}</span>` : '';
+
+  return `
+    <div class="task-row ${t.done ? 'done' : ''} ${t.priority ? 'pri-'+t.priority : ''} ${t.fired && !t.done ? 'fired' : ''}">
+      <div class="chk" onclick="toggleDone('${t.id}')"></div>
+      <div class="task-body">
+        <div class="task-title">${esc(t.title)}</div>
+        <div class="task-meta">
+          ${label ? `<span class="task-time ${cls}">◷ ${label}</span>` : ''}
+          ${catBadge}${recBadge}
+        </div>
+      </div>
+      <div class="task-actions">
+        ${t.fired ? `<button class="act-btn snz" onclick="openSnooze('${t.id}')" title="Snooze">⏸</button>` : ''}
+        <button class="act-btn del" onclick="deleteTask('${t.id}')" title="Delete">×</button>
+      </div>
+    </div>`;
+}
+
+function timeLabel(t) {
+  if (!t.time) return { label: '', cls: '' };
+  if (t.fired) return { label: 'reminded — snooze?', cls: 'fired' };
+  const diff = new Date(t.time) - Date.now();
+  if (diff < 0) return { label: 'overdue', cls: 'overdue' };
+  const mins = Math.floor(diff / 60000);
+  const hrs  = Math.floor(diff / 3600000);
+  if (mins < 60) return { label: `in ${mins || 1} min`, cls: 'soon' };
+  if (hrs  < 24) return { label: `in ${hrs}h`, cls: hrs < 3 ? 'soon' : '' };
+  const d = new Date(t.time);
+  return {
+    label: d.toLocaleString('en-NG', {
+      weekday: 'short', day: 'numeric', month: 'short',
+      hour: '2-digit', minute: '2-digit'
+    }),
+    cls: ''
+  };
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// TOAST
+let toastT;
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show${type ? ' '+type : ''}`;
+  clearTimeout(toastT);
+  toastT = setTimeout(() => { el.className = 'toast'; }, 2800);
+}
+
+// INIT
+setInterval(render, 30000);
+applyTheme();
+load();
+updateBell();
+render();
+scheduleAll();
+</script>
+<footer style="
+  position: fixed;
+  bottom: 16px;
+  right: 20px;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  font-family: 'Fragment Mono', monospace;
+  pointer-events: none;
+  z-index: 50;
+">@Ebunvisuals 2026</footer>
+</body>
+</html>
